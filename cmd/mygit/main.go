@@ -2,40 +2,34 @@ package main
 
 import (
 	"fmt"
+	"github.com/codecrafters-io/git-starter-go/pkg/commands"
 	"os"
-	// Uncomment this block to pass the first stage!
-	// "os"
 )
 
-// Usage: your_git.sh <command> <arg1> <arg2> ...
+var Commands = map[string]func() error{
+	"init":     commands.Init,
+	"cat-file": commands.CatFile,
+}
+
 func main() {
-	// You can use print statements as follows for debugging, they'll be visible when running tests.
-	fmt.Println("Logs from your program will appear here!")
-
-	// Uncomment this block to pass the first stage!
-
 	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "usage: mygit <command> [<args>...]\n")
-		os.Exit(1)
+		exit("usage: mygit <command> [<args>...]")
 	}
 
-	switch command := os.Args[1]; command {
-	case "init":
-		for _, dir := range []string{".git", ".git/objects", ".git/refs"} {
-			if err := os.MkdirAll(dir, 0755); err != nil {
-				fmt.Fprintf(os.Stderr, "Error creating directory: %s\n", err)
-			}
-		}
-
-		headFileContents := []byte("ref: refs/heads/master\n")
-		if err := os.WriteFile(".git/HEAD", headFileContents, 0644); err != nil {
-			fmt.Fprintf(os.Stderr, "Error writing file: %s\n", err)
-		}
-
-		fmt.Println("Initialized git directory")
-
-	default:
-		fmt.Fprintf(os.Stderr, "Unknown command %s\n", command)
-		os.Exit(1)
+	command := os.Args[1]
+	if err := runCommand(command); err != nil {
+		exit(err.Error())
 	}
+}
+
+func exit(message string) {
+	_, _ = fmt.Fprintln(os.Stderr, message)
+	os.Exit(1)
+}
+
+func runCommand(command string) error {
+	if fn, ok := Commands[command]; ok {
+		return fn()
+	}
+	return fmt.Errorf("unknown command %s", command)
 }
