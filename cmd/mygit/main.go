@@ -7,8 +7,9 @@ import (
 )
 
 var Commands = map[string]func() error{
-	"init":     commands.Init,
-	"cat-file": commands.CatFile,
+	"init":        commands.Init,
+	"cat-file":    commands.CatFile,
+	"hash-object": commands.HashObject,
 }
 
 func main() {
